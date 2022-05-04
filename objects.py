@@ -9,7 +9,7 @@ class Background():
 	def __init__(self, win):
 		self.win = win
 
-		self.image = pygame.image.load('Assets/bg.png')
+		self.image = pygame.image.load('Assets/bg.jpg')
 		self.image = pygame.transform.scale(self.image, (WIDTH, HEIGHT))
 		self.rect = self.image.get_rect()
 
@@ -58,15 +58,26 @@ class Player:
 		self.fuel = 100
 		self.powerup = 0
 		self.alive = True
+		
 		self.width = self.image.get_width()
+		
 
-	def update(self, moving_left, moving_right, explosion_group):
+	def update(self, moving_left, moving_right, moving_up, moving_down, explosion_group):
 		if self.alive:
 			if moving_left and self.rect.x > 2:
 				self.rect.x -= self.speed
 
 			if moving_right and self.rect.x < WIDTH - self.width:
 				self.rect.x += self.speed
+
+
+			if moving_up and self.rect.y > 2:
+				self.rect.y -= self.speed
+
+			if moving_down and self.rect.y < HEIGHT:
+				self.rect.y += self.speed
+
+
 
 			if self.health <= 0:
 				x, y = self.rect.center
