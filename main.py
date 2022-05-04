@@ -1,15 +1,13 @@
 import random
 import pygame
-from objects import Background, Player, Enemy, Bullet, Explosion, Fuel, \
-					Powerup, Button, Message, BlinkingText
-
+from objects import Background, Player, Enemy, Bullet, Explosion, Fuel, Powerup, Button, Message, BlinkingText
 pygame.init()
 SCREEN = WIDTH, HEIGHT = 288, 512
 
 info = pygame.display.Info()
 width = info.current_w
 height = info.current_h
-
+pygame.display.set_caption("May Bay")
 if width >= height:
 	win = pygame.display.set_mode(SCREEN, pygame.NOFRAME)
 else:
@@ -122,15 +120,19 @@ start_time = pygame.time.get_ticks()
 
 moving_left = False
 moving_right = False
-
+moving_up = False
+moving_down = False
 home_page = True
 game_page = False
 score_page = False
 
 score = 0
-sound_on = True
+sound_on = False
+
+
 
 running = True
+
 while running:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -145,6 +147,10 @@ while running:
 				moving_left = True
 			if event.key == pygame.K_RIGHT:
 				moving_right = True
+			if event.key == pygame.K_UP: 
+				moving_up = True
+			if event.key == pygame.K_DOWN:
+				moving_down = True
 			if event.key == pygame.K_SPACE:
 				shoot_bullet()
 
@@ -153,7 +159,7 @@ while running:
 				home_page = False
 				game_page = True
 				click_fx.play()
-			elif game_page:
+			elif game_page:	
 				x, y = event.pos
 				if p.rect.collidepoint((x,y)):
 					shoot_bullet()
@@ -161,14 +167,23 @@ while running:
 					moving_left = True
 				elif x > WIDTH // 2:
 					moving_right = True
+				elif y <= HEIGHT // 2:
+					moving_up = True
+				elif y > HEIGHT // 2:
+					moving_down = True
+				
 
 		if event.type == pygame.KEYUP:
 			moving_left = False
 			moving_right = False
+			moving_down = False
+			moving_up = False
 
 		if event.type == pygame.MOUSEBUTTONUP:
 			moving_left = False
 			moving_right = False
+			moving_down = False
+			moving_up = False
 
 	if home_page:
 		win.fill(BLACK)
@@ -243,11 +258,11 @@ while running:
 		bg.update(1)
 		win.blit(clouds_img, (0, 70))
 
-		p.update(moving_left, moving_right, explosion_group)
+		p.update(moving_left, moving_right, moving_up, moving_down, explosion_group)
 		p.draw(win)
 
 		player_bullet_group.update()
-		player_bullet_group.draw(win)
+		player_bullet_group.draw(win)	
 		enemy_bullet_group.update()
 		enemy_bullet_group.draw(win)
 		explosion_group.update()
