@@ -30,7 +30,7 @@ plane_img = pygame.image.load('Assets/plane.png')
 logo_img = pygame.image.load('Assets/logo.png')
 fighter_img = pygame.image.load('Assets/fighter.png')
 clouds_img = pygame.image.load('Assets/clouds.png')
-clouds_img = pygame.transform.scale(clouds_img, (WIDTH, 350))
+clouds_img = pygame.transform.scale(clouds_img, (WIDTH, 250))
 
 home_img = pygame.image.load('Assets/Buttons/homeBtn.png')
 replay_img = pygame.image.load('Assets/Buttons/replay.png')

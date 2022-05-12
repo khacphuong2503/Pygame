@@ -217,10 +217,10 @@ class Bullet(pygame.sprite.Sprite):
 		if self.dx == None:
 			self.dx = 0
 
-		self.damage_dict = {1:5, 2:10, 3:15, 4:25, 5: 25, 6:20}
+		self.damage_dict = {1:5, 2:10, 3:15, 4:25, 5: 25, 6:30}
 		self.damage = self.damage_dict[type_]
 		if powerup_bullet:
-			self.damage = 25
+			self.damage = 125
 
 
 	def update(self):
