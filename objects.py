@@ -1,7 +1,7 @@
 
 import pygame
 
-SCREEN = WIDTH, HEIGHT = 288, 512
+SCREEN = WIDTH, HEIGHT = 450, 650
 
 pygame.mixer.init()
 
@@ -9,7 +9,7 @@ class Background():
 	def __init__(self, win):
 		self.win = win
 
-		self.image = pygame.image.load('Assets/bg.jpg')
+		self.image = pygame.image.load('Assets/bg.png')
 		self.image = pygame.transform.scale(self.image, (WIDTH, HEIGHT))
 		self.rect = self.image.get_rect()
 
@@ -34,7 +34,6 @@ class Background():
 		self.y1 = 0
 		self.y2 = -HEIGHT
 
-
 class Player:
 	def __init__(self, x, y):
 
@@ -57,6 +56,7 @@ class Player:
 		self.health = 100
 		self.fuel = 100
 		self.powerup = 0
+		self.powerup1 = 0
 		self.alive = True
 		
 		self.width = self.image.get_width()
@@ -95,7 +95,6 @@ class Player:
 	def draw(self, win):
 		if self.alive:
 			win.blit(self.image, self.rect)
-
 
 class Enemy(pygame.sprite.Sprite):
 	def __init__(self, x, y, type_):
@@ -143,16 +142,18 @@ class Enemy(pygame.sprite.Sprite):
 		self.fx.play(-1)
 
 	def shoot(self, enemy_bullet_group):
-		if self.type in (1, 4, 5):
+		if self.type in (1,4):
 			x, y = self.rect.center
 			b = Bullet(x, y, self.type)
 			enemy_bullet_group.add(b)
-		if self.type in (2, 3):
+		if self.type in (2, 3, 5):
 			x, y = self.rect.center
-			b = Bullet(x-25, y+10, self.type)
+			b = Bullet(x - 20, y+10, self.type)
 			enemy_bullet_group.add(b)
-			b = Bullet(x+25, y+10, self.type)
+			b = Bullet(x + 20, y+10, self.type)
 			enemy_bullet_group.add(b)
+
+	
 
 
 	def update(self, enemy_bullet_group, explosion_group):
@@ -182,15 +183,17 @@ class Enemy(pygame.sprite.Sprite):
 	def draw(self, win):
 		win.blit(self.image, self.rect)
 
-
 class Bullet(pygame.sprite.Sprite):
 	def __init__(self, x, y, type_, dx=None):
 		super(Bullet, self).__init__()
 
 		self.dx = dx
 		powerup_bullet = False
-		if self.dx in range(-3, 4):
+		powerup1_bullet = False
+		if self.dx in range(-3, 2):
 			powerup_bullet = True
+		if self.dx in range(2, 4):
+			powerup1_bullet = True
 
 		if type_ == 1:
 			self.image = pygame.image.load('Assets/Bullets/1.png')
@@ -209,7 +212,7 @@ class Bullet(pygame.sprite.Sprite):
 			self.image = pygame.transform.scale(self.image, (15, 30))
 
 		self.rect = self.image.get_rect(center=(x, y))
-		if type_ == 6 or powerup_bullet:
+		if type_ == 6 or powerup_bullet or powerup1_bullet :
 			self.speed = -3
 		else:
 			self.speed = 3
@@ -217,11 +220,12 @@ class Bullet(pygame.sprite.Sprite):
 		if self.dx == None:
 			self.dx = 0
 
-		self.damage_dict = {1:5, 2:10, 3:15, 4:25, 5: 25, 6:30}
+		self.damage_dict = {1:5, 2:10, 3:15, 4:25, 5: 25, 6:20}
 		self.damage = self.damage_dict[type_]
 		if powerup_bullet:
-			self.damage = 125
-
+			self.damage = 60
+		if powerup1_bullet:
+			self.damage = 90
 
 	def update(self):
 		self.rect.x += self.dx
@@ -231,7 +235,7 @@ class Bullet(pygame.sprite.Sprite):
 		if self.rect.top >= HEIGHT:
 			self.kill()
 
-	def draw(win):
+	def draw(self ,win):
 		win.blit(self.image, self.rect)
 
 
@@ -271,7 +275,7 @@ class Explosion(pygame.sprite.Sprite):
 				self.counter = 0
 
 		
-	def draw(win):
+	def draw(self, win):
 		win.blit(self.image, self.rect)
 
 
@@ -304,7 +308,20 @@ class Powerup(pygame.sprite.Sprite):
 
 	def draw(self, win):
 		win.blit(self.image, self.rect)
+class Powerup1(pygame.sprite.Sprite):
+	def __init__(self, x, y):
+		super(Powerup1, self).__init__()
 
+		self.image = pygame.image.load('Assets/powerup1.png')
+		self.rect = self.image.get_rect(center=(x, y))
+
+	def update(self):
+		self.rect.y += 3
+		if self.rect.top >= HEIGHT:
+			self.kill()
+
+	def draw(self, win):
+		win.blit(self.image, self.rect)
 
 class Button(pygame.sprite.Sprite):
 	def __init__(self, img, scale, x, y):

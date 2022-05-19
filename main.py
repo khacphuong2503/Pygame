@@ -1,9 +1,12 @@
+from ast import While
 import random
 import pygame
-from objects import Background, Player, Enemy, Bullet, Explosion, Fuel, Powerup, Button, Message, BlinkingText
-pygame.init()
-SCREEN = WIDTH, HEIGHT = 288, 512
 
+pygame.font.init()
+from objects import Background, Player, Enemy, Bullet, Explosion, Fuel, Powerup, Powerup1, Button, Message, BlinkingText
+pygame.init()
+SCREEN = WIDTH, HEIGHT = 450, 650
+enemies = []
 info = pygame.display.Info()
 width = info.current_w
 height = info.current_h
@@ -27,10 +30,13 @@ BLACK = (0, 0, 20)
 # IMAGES **********************************************************************
 
 plane_img = pygame.image.load('Assets/plane.png')
-logo_img = pygame.image.load('Assets/logo.png')
+plane1_img = pygame.image.load('Assets/spaceship_red.png')
+logo_img = pygame.image.load('Assets/logo1.png')
+spaceshipred_img = pygame.image.load('Assets/spaceship_red.png')
+spaceshipyellow_img = pygame.image.load('Assets/spaceship_yellow.png')
 fighter_img = pygame.image.load('Assets/fighter.png')
 clouds_img = pygame.image.load('Assets/clouds.png')
-clouds_img = pygame.transform.scale(clouds_img, (WIDTH, 250))
+clouds_img = pygame.transform.scale(clouds_img, (WIDTH, 300))
 
 home_img = pygame.image.load('Assets/Buttons/homeBtn.png')
 replay_img = pygame.image.load('Assets/Buttons/replay.png')
@@ -40,22 +46,27 @@ sound_on_img = pygame.image.load("Assets/Buttons/soundOnBtn.png")
 
 # BUTTONS *********************************************************************
 
-home_btn = Button(home_img, (24, 24), WIDTH // 4 - 18, HEIGHT//2 + 120)
-replay_btn = Button(replay_img, (36,36), WIDTH // 2  - 18, HEIGHT//2 + 115)
-sound_btn = Button(sound_on_img, (24, 24), WIDTH - WIDTH // 4 - 18, HEIGHT//2 + 120)
+home_btn = Button(home_img, (60, 60), WIDTH // 4 - 18, HEIGHT//2 + 120)	
+spaceshipred_btn = Button(spaceshipred_img, (24, 24), WIDTH // 4 - 18, HEIGHT//2 + 120)
+spaceshipyellow_btn = Button(spaceshipyellow_img, (24, 24), WIDTH // 4 - 18, HEIGHT//2 + 120)
+replay_btn = Button(replay_img, (60,60), WIDTH // 2  - 18, HEIGHT//2 + 120)
+sound_btn = Button(sound_on_img, (60, 60), WIDTH - WIDTH // 4 - 18, HEIGHT//2 + 120)
 
 
 # FONTS ***********************************************************************
-
+game_font ='Fonts/DroneflyRegular-K78LA.ttf'
 game_over_font = 'Fonts/ghostclan.ttf'
 tap_to_play_font = 'Fonts/BubblegumSans-Regular.ttf'
 score_font = 'Fonts/DalelandsUncialBold-82zA.ttf'
 final_score_font = 'Fonts/DroneflyRegular-K78LA.ttf'
-
-game_over_msg = Message(WIDTH//2, 230, 30, 'Chet roi', game_over_font, WHITE, win)
-score_msg = Message(WIDTH-50, 28, 30, '0', final_score_font, RED, win)
-final_score_msg = Message(WIDTH//2, 280, 30, '0', final_score_font, RED, win)
-tap_to_play_msg = tap_to_play = BlinkingText(WIDTH//2, HEIGHT-60, 25, "Bat Dau Choi",
+hight_score_font = 'Fonts/DroneflyRegular-K78LA.ttf'
+main_font = pygame.font.SysFont("comicsans", 50)
+lost_font = pygame.font.SysFont("comicsans", 60)
+game_over_msg = Message(WIDTH//2, 300, 30, 'LOSE', game_over_font, WHITE, win)
+score_msg = Message(WIDTH-50, 28, 30, '0',final_score_font, RED, win)
+final_score_msg = Message(WIDTH//2, 340, 30, '0', final_score_font, RED, win)
+hight_score_msg = Message(WIDTH//2, 370, 30, '0', hight_score_font, WHITE, win)
+tap_to_play_msg = tap_to_play = BlinkingText(WIDTH//2, HEIGHT-60, 25, "START",
 				 tap_to_play_font, WHITE, win)
 
 
@@ -83,23 +94,46 @@ enemy_bullet_group = pygame.sprite.Group()
 explosion_group = pygame.sprite.Group()
 fuel_group = pygame.sprite.Group()
 powerup_group = pygame.sprite.Group()
+powerup1_group = pygame.sprite.Group()
 
-# FUNCTIONS *******************************************************************
-
+# HÀM *******************************************************************
+def score_display(game_state):
+	if game_state == 'game_page':
+		score_surface = game_font.pygame.font.render(f' Score:{int(score)}', True, WHITE)
+		score_rect = hight_score_surface.get_rect(center = (350, 30))
+		SCREEN.blit(score_surface, score_rect)
+	if game_state == 'score_page':
+		hight_score_surface = game_font.pygame.font.render(f'Hight Score:{int(hight_score)}', True, WHITE)
+		hight_score_rect = hight_score_surface.get_rect(center = (350, 30))
+		SCREEN.blit(hight_score_surface, hight_score_rect)
+def update_score(score, hight_score):
+	if score > hight_score:
+		hight_score = score
+	return hight_score 	
 def shoot_bullet():
 	x, y = p.rect.center[0], p.rect.y
-
 	if p.powerup > 0:
 		for dx in range(-3, 4):
 			b = Bullet(x, y, 4, dx)
 			player_bullet_group.add(b)
 		p.powerup -= 1
 	else:
-		b = Bullet(x-30, y, 6)
-		player_bullet_group.add(b)
-		b = Bullet(x+30, y, 6)
+		b = Bullet(x, y, 6)
 		player_bullet_group.add(b)
 	player_bullet_fx.play()
+
+def shoot_bullet1():
+	x, y = p.rect.center[0], p.rect.y
+
+	if  p.powerup > 0:
+		for dx in range(-3, 4):
+			b = Bullet(x, y, 2, dx)
+			player_bullet_group.add(b)
+		p.powerup -= 1
+	else:
+		b = Bullet(x, y, 6)
+		player_bullet_group.add(b)
+	player_bullet_fx.play()	
 
 def reset():
 	enemy_group.empty()
@@ -108,7 +142,7 @@ def reset():
 	explosion_group.empty()
 	fuel_group.empty()
 	powerup_group.empty()
-
+	powerup1_group.empty()
 	p.reset(p.x, p.y)
 
 # VARIABLES *******************************************************************
@@ -123,17 +157,36 @@ moving_right = False
 moving_up = False
 moving_down = False
 home_page = True
+menu_page = False
 game_page = False
 score_page = False
 
 score = 0
+hight_score = 0
 sound_on = False
 
+def redraw_window():
+        win.blit(bg, (0,0))
+        # draw text
+        
+        level_label = main_font.render(f"Level: {level}", 1, (255,255,255))
+        win.blit(level_label, (WIDTH - level_label.get_width() - 10, 10))
 
+        for enemy in enemies:
+            enemy.draw(win)
+
+        Player.draw(win)
+
+        """if lost:
+            lost_label = lost_font.render("You Lost!!", 1, (255,255,255))
+            WIN.blit(lost_label, (WIDTH/2 - lost_label.get_width()/2, 350))"""
+
+        pygame.display.update()
 
 running = True
 
 while running:
+	
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			running = False
@@ -153,10 +206,16 @@ while running:
 				moving_down = True
 			if event.key == pygame.K_SPACE:
 				shoot_bullet()
-
+			if event.key ==pygame.K_x:
+				shoot_bullet1()
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if home_page:
 				home_page = False
+				menu_page = True
+				click_fx.play()
+			elif menu_page:
+				home_page = True
+				menu_page = False
 				game_page = True
 				click_fx.play()
 			elif game_page:	
@@ -187,17 +246,32 @@ while running:
 
 	if home_page:
 		win.fill(BLACK)
-		win.blit(logo_img, (30, 80))
+		win.blit(logo_img, (100, 80))
+		win.blit(fighter_img, (WIDTH//2 - 50, HEIGHT//2 + 40))
+		pygame.draw.circle(win, WHITE, (WIDTH//2, HEIGHT//2 + 90), 50, 4)
+		tap_to_play_msg.update()
+
+	if menu_page:
+		win.fill(BLACK)
+		win.blit(spaceshipred_img, (10,60))
+		win.blit(spaceshipyellow_img, (40,60))
 		win.blit(fighter_img, (WIDTH//2 - 50, HEIGHT//2))
 		pygame.draw.circle(win, WHITE, (WIDTH//2, HEIGHT//2 + 50), 50, 4)
 		tap_to_play_msg.update()
 
 	if score_page:
 		win.fill(BLACK)
-		win.blit(logo_img, (30, 50))
+
+		win.blit(logo_img, (100, 80))
 		game_over_msg.update()
 		final_score_msg.update(score)
-
+		"""hight_score_surface = game_font.pygame.font.render(f'Hight Score:{int(hight_score)}', True, WHITE)
+		hight_score_rect = hight_score_surface.get_rect(center = (350, 30))
+		SCREEN.blit(hight_score_surface, hight_score_rect)"""
+		"""hight_score_msg = update_score(score, hight_score)"""
+		"""score += score
+		score_display('score_page')"""
+		"""hight_score = update_score(score, hight_score)"""
 		if home_btn.draw(win):
 			home_page = True
 			game_page = False
@@ -208,6 +282,14 @@ while running:
 			plane_destroy_count = 0
 			level = 1
 			score = 0
+		"""if spaceshipred_btn.draw(win):
+			home_page = False
+			game_page = True
+			reset()
+			click_fx.play()
+
+			plane_destroy_count = 0
+			score = 0"""
 
 		if replay_btn.draw(win):
 			score_page = False
@@ -216,6 +298,7 @@ while running:
 			click_fx.play()
 
 			plane_destroy_count = 0
+			level = 1
 			score = 0
 
 		if sound_btn.draw(win):
@@ -229,7 +312,7 @@ while running:
 				pygame.mixer.music.stop()
 
 	if game_page:
-
+		
 		current_time = pygame.time.get_ticks()
 		delta_time = current_time - start_time
 		if delta_time >= plane_frequency:
@@ -254,9 +337,9 @@ while running:
 				level += 1
 				plane_destroy_count = 0
 
-		p.fuel -= 0.05
+		p.fuel -= 0.035
 		bg.update(1)
-		win.blit(clouds_img, (0, 70))
+		"""win.blit(clouds_img, (0, 70))"""
 
 		p.update(moving_left, moving_right, moving_up, moving_down, explosion_group)
 		p.draw(win)
@@ -270,7 +353,9 @@ while running:
 		fuel_group.update()
 		fuel_group.draw(win)
 		powerup_group.update()
+		powerup1_group.update()
 		powerup_group.draw(win)
+		powerup1_group.draw(win)
 
 		enemy_group.update(enemy_bullet_group, explosion_group)
 		enemy_group.draw(win)
@@ -294,9 +379,13 @@ while running:
 					if plane.health <= 0:
 						x, y = plane.rect.center
 						rand = random.random()
-						if rand >= 0.9:
+						if rand >= 0.8:
 							power = Powerup(x, y)
 							powerup_group.add(power)
+						elif rand >= 0.5:
+							power = Powerup1(x, y)
+							powerup_group.add(power)
+	
 						elif rand >= 0.3:
 							fuel = Fuel(x, y)
 							fuel_group.add(fuel)
@@ -325,7 +414,7 @@ while running:
 				p.alive = False
 
 			if pygame.sprite.spritecollide(p, fuel_group, True):
-				p.fuel += 25
+				p.fuel += 35
 				if p.fuel >= 100:
 					p.fuel = 100
 				fuel_fx.play()
@@ -342,8 +431,8 @@ while running:
 
 		score += 1
 		score_msg.update(score)
-
-		fuel_color = RED if p.fuel <= 40 else GREEN
+		
+		fuel_color = RED if p.fuel <= 30 else GREEN
 		pygame.draw.rect(win, fuel_color, (30, 20, p.fuel, 10), border_radius=4)
 		pygame.draw.rect(win, WHITE, (30, 20, 100, 10), 2, border_radius=4)
 		pygame.draw.rect(win, BLUE, (30, 32, p.health, 10), border_radius=4)
@@ -352,6 +441,7 @@ while running:
 
 	pygame.draw.rect(win, WHITE, (0,0, WIDTH, HEIGHT), 5, border_radius=4)
 	clock.tick(FPS)
+
 	pygame.display.update()
 
 pygame.quit()
